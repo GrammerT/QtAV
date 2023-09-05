@@ -12,10 +12,24 @@ INCLUDE(CheckTypeSize)
 include_directories(${QTDIR}/include) #TODO: remove. use external/include
 get_filename_component(QTDIR "${QTDIR}" ABSOLUTE)
 
+list(APPEND CMAKE_PREFIX_PATH $ENV{FFmpegPath})
+
+set(ENV{PKG_CONFIG_PATH} $ENV{FFmpegPath}/lib/pkgconfig)
+
 find_package(PkgConfig)
+
+
+# message("---"$ENV{FFmpegPath}/include)
+message("---"${CMAKE_LIBRARY_PATH_FLAG}${QTAV_SOURCE_DIR}/external/lib)
+
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SAFESEH:NO")
 
 list(APPEND EXTRA_INCLUDE ${QTAV_SOURCE_DIR}/external/include)
 list(APPEND EXTRA_LIBS ${CMAKE_LIBRARY_PATH_FLAG}${QTAV_SOURCE_DIR}/external/lib)
+# list(APPEND EXTRA_INCLUDE $ENV{FFmpegPath}/include)
+# list(APPEND EXTRA_LIBS $ENV{FFmpegPath}/lib)
+
+
 if(APPLE)
     if(IOS)
       #set_xcode_property(myioslib IPHONEOS_DEPLOYMENT_TARGET "8.0")
@@ -493,10 +507,16 @@ set_source_files_properties(${RESOURCES_SOURCES} PROPERTIES GENERATED ON)
 if(WIN32)
   set(RC_FILE ${CMAKE_CURRENT_BINARY_DIR}/${MODULE}.rc)
   configure_file(${QTAV_SOURCE_DIR}/cmake/QtAV.rc.in ${RC_FILE})
+  set(QTAV_COMPILE_OPTIONS /SAFESEH:NO)
 endif()
+
+
 # add HEADERS for moc
 add_library(${MODULE} SHARED ${SOURCES} ${RESOURCES_SOURCES} ${HEADERS} ${RC_FILE})
 
+if(WIN32)
+  target_link_options(${MODULE} PRIVATE ${QTAV_COMPILE_OPTIONS})
+endif()
 list(REMOVE_DUPLICATES EXTRA_LIBS)
 # qt5_use_modules(since 2.8.9) is deprecated since cmake 2.8.11
 target_link_libraries(${MODULE} 
@@ -504,12 +524,17 @@ target_link_libraries(${MODULE}
   LINK_PUBLIC Qt5::Core Qt5::Gui # will add include dirs, macros etc.
 )
 
+
+
 foreach(PKG_CONFIG_MODULE ${PKG_CONFIG_MODULES})
     target_link_libraries(${MODULE} PRIVATE ${${PKG_CONFIG_MODULE}_LINK_LIBRARIES})
     target_include_directories(${MODULE} PRIVATE ${${PKG_CONFIG_MODULE}_INCLUDE_DIRS})
     target_compile_options(${MODULE} PRIVATE ${${PKG_CONFIG_MODULE}_CFLAGS_OTHER})
     target_compile_definitions(${MODULE} PRIVATE -DQTAV_HAVE_${PKG_CONFIG_MODULE}=1)
 endforeach()
+# if(WIN32)
+#   target_compile_options(${MODULE} PRIVATE ${QTAV_COMPILE_OPTIONS})
+# endif()
 
 set_target_properties(${MODULE} PROPERTIES
   MACOSX_RPATH ON

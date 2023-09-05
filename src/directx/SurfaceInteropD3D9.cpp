@@ -85,7 +85,10 @@ InteropResource* InteropResource::create(IDirect3DDevice9 *dev, InteropType type
     if (type == InteropAuto || type == InteropGL) {
 #if QTAV_HAVE(D3D9_GL)
         if (!OpenGLHelper::isOpenGLES())
-            return CreateInteropGL(dev);
+        {
+            return nullptr;
+        }
+            // return CreateInteropGL(dev);
 #endif
     }
     return NULL;
