@@ -9,8 +9,8 @@ include(CheckLibraryExists)
 INCLUDE(CheckTypeSize)
 
 # set qt dirs first so we can find depends in qt install dir
-include_directories(${QTDIR}/include) #TODO: remove. use external/include
-get_filename_component(QTDIR "${QTDIR}" ABSOLUTE)
+include_directories($ENV{QTDIR}/include) #TODO: remove. use external/include
+get_filename_component(QTDIR "$ENV{QTDIR}" ABSOLUTE)
 
 list(APPEND CMAKE_PREFIX_PATH $ENV{FFmpegPath})
 
@@ -235,13 +235,13 @@ if(Qt5Gui_OPENGL_IMPLEMENTATION STREQUAL GL) # windows always set to GL
     set(OPENGL 1)
   endif()
   if(DEFINED Qt5Gui_EGL_LIBRARIES) # x11?
-    set(HAVE_EGL 1)
+    set(HAVE_EGL 0)
   endif()
 else()
   set(OPENGLES 1)
 endif()
 if(OPENGLES OR DYNAMIC_GL)
-  set(HAVE_EGL 1)
+  set(HAVE_EGL 0)
 endif()
 if(NOT OPENGL AND NOT OPENGLES AND NOT DYNAMIC_GL)
   set(HAVE_OPENGL 0)
@@ -391,7 +391,7 @@ if(WIN32 OR WindowsStore OR WindowsPhone)
   set(CMAKE_REQUIRED_LIBRARIES ${OLD_REQUIRED_LIBRARIES})
   if(HAVE_D3D11)
     # https://crascit.com/2015/03/28/enabling-cxx11-in-cmake/ (global and specified target)
-    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_STANDARD 17)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
     list(APPEND EXTRA_DEFS -DQTAV_HAVE_D3D11VA=1)
     list(APPEND SOURCES
