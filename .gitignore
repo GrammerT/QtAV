@@ -39,7 +39,6 @@ Makefile*
 *.so*
 
 *.exp
-*.exe
 *.out
 
 #vc files
